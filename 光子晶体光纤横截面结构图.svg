@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">实芯芯光子晶体光纤横截面示意图</title>
+  <desc id="desc">石英基底中周期排列的空气孔围绕一个缺陷纤芯，标注空气孔直径 d 与孔间距 Λ。</desc>
+  <defs>
+    <radialGradient id="glass" cx="42%" cy="35%"><stop stop-color="#23475c"/><stop offset="1" stop-color="#091826"/></radialGradient>
+    <radialGradient id="core"><stop stop-color="#c9f7ff"/><stop offset=".35" stop-color="#54cde7"/><stop offset="1" stop-color="#176579"/></radialGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M36 0H0V36" fill="none" stroke="#5a788b" stroke-opacity=".16"/></pattern>
+  </defs>
+  <rect width="1600" height="1000" fill="#07101b"/>
+  <rect x="70" y="70" width="1460" height="860" rx="18" fill="url(#grid)" stroke="#2d4a5d" stroke-width="2"/>
+  <text x="130" y="155" fill="#eaf4f8" font-family="Arial, 'PingFang SC', sans-serif" font-size="48" font-weight="700">实芯芯光子晶体光纤：横截面</text>
+  <text x="130" y="202" fill="#9fb2c0" font-family="Arial, 'PingFang SC', sans-serif" font-size="25">空气孔六角晶格形成低有效折射率包层；中心“缺失空气孔”形成石英缺陷纤芯</text>
+  <circle cx="690" cy="560" r="345" fill="url(#glass)" stroke="#4d7185" stroke-width="5"/>
+  <g fill="#050c14" stroke="#5fcde3" stroke-opacity=".5" stroke-width="2">
+    <circle cx="690" cy="385" r="42"/><circle cx="842" cy="472" r="42"/><circle cx="842" cy="648" r="42"/><circle cx="690" cy="735" r="42"/><circle cx="538" cy="648" r="42"/><circle cx="538" cy="472" r="42"/>
+    <circle cx="690" cy="285" r="42"/><circle cx="828" cy="322" r="42"/><circle cx="928" cy="423" r="42"/><circle cx="965" cy="560" r="42"/><circle cx="928" cy="698" r="42"/><circle cx="828" cy="798" r="42"/><circle cx="690" cy="835" r="42"/><circle cx="553" cy="798" r="42"/><circle cx="452" cy="698" r="42"/><circle cx="415" cy="560" r="42"/><circle cx="452" cy="423" r="42"/><circle cx="553" cy="322" r="42"/>
+  </g>
+  <circle cx="690" cy="560" r="69" fill="#3ecbe7" opacity=".2" filter="url(#glow)"/>
+  <circle cx="690" cy="560" r="49" fill="url(#core)" stroke="#d7fbff" stroke-width="3"/>
+  <text x="690" y="570" text-anchor="middle" fill="#06202b" font-family="Arial, 'PingFang SC', sans-serif" font-size="22" font-weight="700">石英芯</text>
+  <g stroke="#ffbf4a" fill="none" stroke-width="4" marker-end="">
+    <path d="M690 385V472"/><path d="M680 395l10-10 10 10M680 462l10 10 10-10"/>
+    <path d="M690 370H842"/><path d="M700 360l-10 10 10 10M832 360l10 10-10 10"/>
+  </g>
+  <text x="712" y="437" fill="#ffcb62" font-family="STIXGeneral, serif" font-size="34">Λ</text>
+  <text x="756" y="354" fill="#ffcb62" font-family="STIXGeneral, serif" font-size="34">d</text>
+  <g font-family="Arial, 'PingFang SC', sans-serif">
+    <path d="M1045 560h265" stroke="#5fd3ea" stroke-width="3"/><circle cx="1328" cy="560" r="7" fill="#5fd3ea"/>
+    <text x="1070" y="530" fill="#eaf4f8" font-size="30" font-weight="700">空气孔（n≈1）</text><text x="1070" y="580" fill="#9fb2c0" font-size="23">孔径 d 控制空气填充率</text>
+    <path d="M741 560h569" stroke="#5fd3ea" stroke-width="3" stroke-dasharray="8 9"/><circle cx="1328" cy="560" r="7" fill="#5fd3ea"/>
+    <text x="1070" y="665" fill="#eaf4f8" font-size="30" font-weight="700">缺陷纤芯（SiO₂）</text><text x="1070" y="715" fill="#9fb2c0" font-size="23">光场受全反射与微结构共同约束</text>
+  </g>
+  <text x="130" y="905" fill="#55d4a0" font-family="Arial, 'PingFang SC', sans-serif" font-size="24">教学提示：改变 d/Λ、Λ 和空气孔环数，会改变模式约束与波导色散，从而移动零色散波长。</text>
+</svg>

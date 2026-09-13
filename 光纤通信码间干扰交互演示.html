@@ -1,0 +1,1081 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>光纤通信码间干扰实验台</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07101b;
+      --surface: #0d1b2a;
+      --surface-2: #122437;
+      --border: #2a4154;
+      --grid: #263b4d;
+      --text: #edf4f8;
+      --muted: #9db0bf;
+      --cyan: #32c9e8;
+      --amber: #ffbe3d;
+      --green: #57d29c;
+      --coral: #ff7065;
+      --violet: #b191ff;
+      --focus: #f8fafc;
+      --radius: 6px;
+      --shadow: 0 16px 38px rgb(0 0 0 / 0.22);
+      font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif;
+      font-synthesis: none;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { background: var(--bg); }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: var(--bg);
+      color: var(--text);
+      letter-spacing: 0;
+    }
+
+    button, input, select { font: inherit; }
+
+    button, select, input[type="range"], input[type="checkbox"] { cursor: pointer; }
+
+    button:focus-visible,
+    select:focus-visible,
+    input:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    .app-shell {
+      width: min(1560px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 26px 0 42px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      margin: 0 0 7px;
+      color: var(--cyan);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.9rem;
+      line-height: 1.3;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 0 0 auto;
+    }
+
+    .icon-button {
+      width: 42px;
+      height: 42px;
+      display: inline-grid;
+      place-items: center;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 1rem;
+      transition: background-color 180ms ease, border-color 180ms ease;
+    }
+
+    .icon-button:hover { background: var(--surface-2); border-color: var(--cyan); }
+
+    .status-chip {
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 0 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.86rem;
+      white-space: nowrap;
+    }
+
+    .status-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green); }
+    .status-chip[data-level="moderate"] .status-dot { background: var(--amber); }
+    .status-chip[data-level="severe"] .status-dot { background: var(--coral); }
+
+    .system-section {
+      border-block: 1px solid var(--border);
+      padding: 22px 0 20px;
+      margin-bottom: 22px;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 16px;
+    }
+
+    .section-heading h2,
+    .panel-title h2 {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.3;
+    }
+
+    .section-heading p,
+    .panel-title p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .system-flow {
+      display: grid;
+      grid-template-columns: minmax(150px, 0.8fr) 54px minmax(185px, 1fr) 54px minmax(310px, 2fr) 54px minmax(185px, 1fr) 54px minmax(160px, 0.9fr);
+      align-items: center;
+      gap: 0;
+    }
+
+    .system-node {
+      min-height: 104px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 15px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .system-node strong { font-size: 0.93rem; }
+    .system-node span { margin-top: 7px; color: var(--muted); font-size: 0.76rem; line-height: 1.45; }
+    .system-node.receiver { border-color: var(--amber); }
+    .system-node.decision { border-color: var(--coral); }
+
+    .flow-arrow {
+      position: relative;
+      height: 2px;
+      background: var(--border);
+      margin: 0 10px;
+    }
+
+    .flow-arrow::after {
+      content: "";
+      position: absolute;
+      top: -4px;
+      right: -1px;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid var(--muted);
+      border-right: 2px solid var(--muted);
+      transform: rotate(45deg);
+    }
+
+    .fiber-node {
+      position: relative;
+      overflow: hidden;
+      border-color: var(--cyan);
+    }
+
+    .fiber-track {
+      position: relative;
+      height: 19px;
+      margin-top: 13px;
+      border-block: 2px solid var(--cyan);
+    }
+
+    .travel-pulse {
+      position: absolute;
+      top: 3px;
+      left: -18px;
+      width: 13px;
+      height: 9px;
+      border-radius: 2px;
+      background: var(--amber);
+      animation: travel 3.2s linear infinite;
+      animation-delay: calc(var(--index) * -0.8s);
+    }
+
+    .paused .travel-pulse { animation-play-state: paused; }
+
+    @keyframes travel {
+      from { transform: translateX(0); }
+      to { transform: translateX(var(--track-distance, 520px)); }
+    }
+
+    .observation {
+      margin-top: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--coral);
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .observation::before {
+      content: "";
+      width: 18px;
+      height: 2px;
+      background: currentColor;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .controls-panel { padding: 18px; }
+
+    .panel-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .segmented button {
+      min-height: 38px;
+      border: 0;
+      border-right: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.82rem;
+      transition: background-color 180ms ease, color 180ms ease;
+    }
+
+    .segmented button:last-child { border-right: 0; }
+    .segmented button:hover { background: var(--surface-2); color: var(--text); }
+    .segmented button[aria-pressed="true"] { background: var(--surface-2); color: var(--cyan); font-weight: 700; }
+
+    .control-group { margin-bottom: 18px; }
+
+    .control-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      color: var(--text);
+      font-size: 0.82rem;
+    }
+
+    .control-label output {
+      color: var(--cyan);
+      font-family: Arial, sans-serif;
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 4px;
+      border-radius: 2px;
+      appearance: none;
+      background: var(--border);
+      accent-color: var(--cyan);
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      width: 17px;
+      height: 17px;
+      border: 3px solid var(--surface);
+      border-radius: 50%;
+      appearance: none;
+      background: var(--cyan);
+      box-shadow: 0 0 0 1px var(--cyan);
+    }
+
+    select {
+      width: 100%;
+      min-height: 40px;
+      padding: 0 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      color: var(--text);
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding-top: 13px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .toggle-row + .toggle-row { margin-top: 12px; }
+    .toggle-row input { width: 18px; height: 18px; accent-color: var(--cyan); }
+
+    .visuals {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(300px, 0.85fr);
+      gap: 18px;
+    }
+
+    .chart-panel { min-width: 0; padding: 18px; }
+
+    .chart-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      min-height: 340px;
+    }
+
+    .eye-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      min-height: 340px;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .metrics {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin-top: 18px;
+    }
+
+    .metric {
+      min-width: 0;
+      padding: 17px 18px;
+      border-right: 1px solid var(--border);
+    }
+
+    .metric:last-child { border-right: 0; }
+    .metric span { display: block; color: var(--muted); font-size: 0.75rem; }
+    .metric strong { display: block; margin-top: 7px; font: 700 1.18rem/1.2 Arial, sans-serif; color: var(--text); }
+    .metric strong.good { color: var(--green); }
+    .metric strong.moderate { color: var(--amber); }
+    .metric strong.severe { color: var(--coral); }
+
+    .explanation {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.6fr);
+      gap: 22px;
+      padding: 20px 2px 0;
+    }
+
+    .equation {
+      align-self: center;
+      font: 700 1.14rem/1.7 Arial, sans-serif;
+      color: var(--amber);
+    }
+
+    .interpretation {
+      margin: 0;
+      color: var(--text);
+      font-size: 0.91rem;
+      line-height: 1.75;
+    }
+
+    .model-note {
+      grid-column: 1 / -1;
+      margin: 0;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.74rem;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 1180px) {
+      .system-flow { grid-template-columns: 1fr 38px 1.15fr 38px 1.8fr 38px 1.15fr 38px 1fr; }
+      .visuals { grid-template-columns: 1fr; }
+      .eye-wrap { aspect-ratio: 16 / 7; min-height: 300px; }
+    }
+
+    @media (max-width: 900px) {
+      .app-shell { width: min(100% - 28px, 760px); padding-top: 18px; }
+      .topbar { align-items: flex-start; }
+      .workspace { grid-template-columns: 1fr; }
+      .system-flow { grid-template-columns: 1fr; gap: 8px; }
+      .flow-arrow { width: 2px; height: 25px; margin: 0 auto; }
+      .flow-arrow::after { top: auto; right: -4px; bottom: 0; transform: rotate(135deg); }
+      .system-node { min-height: 82px; }
+      .fiber-node { min-height: 108px; }
+      .metrics { grid-template-columns: repeat(2, 1fr); }
+      .metric:nth-child(2) { border-right: 0; }
+      .metric:nth-child(-n+2) { border-bottom: 1px solid var(--border); }
+    }
+
+    @media (max-width: 560px) {
+      .app-shell { width: min(100% - 20px, 520px); }
+      .topbar { display: grid; }
+      .top-actions { width: 100%; }
+      .status-chip { flex: 1; justify-content: center; }
+      h1 { font-size: 1.55rem; }
+      .section-heading { display: block; }
+      .section-heading p { margin-top: 6px; }
+      .chart-wrap, .eye-wrap { aspect-ratio: 4 / 3; min-height: 300px; }
+      .metrics { grid-template-columns: 1fr; }
+      .metric { border-right: 0; border-bottom: 1px solid var(--border); }
+      .metric:last-child { border-bottom: 0; }
+      .explanation { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell" id="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">归一化教学模型</p>
+        <h1>光纤通信码间干扰实验台</h1>
+        <p class="subtitle">观察色散如何在接收端形成脉冲重叠与判决风险</p>
+      </div>
+      <div class="top-actions">
+        <div class="status-chip" id="statusChip" data-level="moderate" aria-live="polite">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="statusText">中等码间干扰</span>
+        </div>
+        <button class="icon-button" id="playButton" type="button" aria-label="暂停动画" title="播放或暂停动画">Ⅱ</button>
+        <button class="icon-button" id="resetButton" type="button" aria-label="恢复默认参数" title="恢复默认参数">↺</button>
+      </div>
+    </header>
+
+    <section class="system-section" aria-labelledby="systemTitle">
+      <div class="section-heading">
+        <h2 id="systemTitle">光纤通信链路</h2>
+        <p>ISI 在光纤中逐步形成，在接收端采样判决前暴露</p>
+      </div>
+      <div class="system-flow" id="systemFlow">
+        <div class="system-node">
+          <strong>比特源</strong>
+          <span id="bitSequenceLabel">1 0 1 1 0 1 0 1</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"></div>
+        <div class="system-node">
+          <strong>激光器与调制器</strong>
+          <span>产生有限宽度的高斯光脉冲</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"></div>
+        <div class="system-node fiber-node">
+          <strong>单模光纤传输</strong>
+          <span><b id="fiberLengthLabel">20 km</b> · 色散系数 <b id="fiberDispersionLabel">17 ps/(nm·km)</b></span>
+          <div class="fiber-track" id="fiberTrack" aria-hidden="true">
+            <i class="travel-pulse" style="--index:0"></i>
+            <i class="travel-pulse" style="--index:1"></i>
+            <i class="travel-pulse" style="--index:2"></i>
+            <i class="travel-pulse" style="--index:3"></i>
+          </div>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"></div>
+        <div class="system-node receiver">
+          <strong>光电探测与接收滤波</strong>
+          <span>展宽脉冲在此转换为接收电信号</span>
+          <div class="observation">ISI 观察点</div>
+        </div>
+        <div class="flow-arrow" aria-hidden="true"></div>
+        <div class="system-node decision">
+          <strong>采样与判决</strong>
+          <span id="decisionLabel">当前序列判决正确</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace" aria-label="交互实验区">
+      <aside class="panel controls-panel" aria-labelledby="controlsTitle">
+        <div class="panel-title">
+          <div>
+            <h2 id="controlsTitle">链路参数</h2>
+            <p>改变物理量观察接收波形</p>
+          </div>
+        </div>
+
+        <div class="segmented" aria-label="典型场景">
+          <button type="button" data-preset="light" aria-pressed="false">轻微</button>
+          <button type="button" data-preset="typical" aria-pressed="true">典型</button>
+          <button type="button" data-preset="severe" aria-pressed="false">严重</button>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="bitRate">
+            <span>比特率 R</span><output id="bitRateOut">40 Gb/s</output>
+          </label>
+          <input id="bitRate" type="range" min="10" max="100" step="5" value="40">
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="fiberLength">
+            <span>光纤长度 L</span><output id="fiberLengthOut">20 km</output>
+          </label>
+          <input id="fiberLength" type="range" min="0" max="100" step="1" value="20">
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="dispersion">
+            <span>色散系数 |D|</span><output id="dispersionOut">17 ps/(nm·km)</output>
+          </label>
+          <input id="dispersion" type="range" min="0" max="22" step="0.5" value="17">
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="spectralWidth">
+            <span>光谱宽度 Δλ</span><output id="spectralWidthOut">0.05 nm</output>
+          </label>
+          <input id="spectralWidth" type="range" min="0.01" max="0.50" step="0.01" value="0.05">
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="dutyCycle">
+            <span>输入脉冲宽度</span><output id="dutyCycleOut">0.35 Tb</output>
+          </label>
+          <input id="dutyCycle" type="range" min="0.20" max="0.75" step="0.05" value="0.35">
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="threshold">
+            <span>判决门限</span><output id="thresholdOut">0.35</output>
+          </label>
+          <input id="threshold" type="range" min="0.10" max="0.90" step="0.05" value="0.35">
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="pattern">比特序列</label>
+          <select id="pattern">
+            <option value="10110101">10110101</option>
+            <option value="10101010">10101010</option>
+            <option value="11001100">11001100</option>
+            <option value="10000101">10000101</option>
+          </select>
+        </div>
+
+        <label class="toggle-row" for="showInput">
+          <span>显示发射端参考波形</span>
+          <input id="showInput" type="checkbox" checked>
+        </label>
+        <label class="toggle-row" for="showNoise">
+          <span>加入接收噪声</span>
+          <input id="showNoise" type="checkbox">
+        </label>
+      </aside>
+
+      <div class="visuals">
+        <section class="panel chart-panel" aria-labelledby="waveTitle">
+          <div class="panel-title">
+            <div>
+              <h2 id="waveTitle">接收端时域波形</h2>
+              <p>采样判决前 · 光强归一化</p>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="waveCanvas" role="img" aria-label="接收端脉冲波形"></canvas>
+          </div>
+        </section>
+
+        <section class="panel chart-panel" aria-labelledby="eyeTitle">
+          <div class="panel-title">
+            <div>
+              <h2 id="eyeTitle">接收眼图</h2>
+              <p>多段码元波形叠加</p>
+            </div>
+          </div>
+          <div class="eye-wrap">
+            <canvas id="eyeCanvas" role="img" aria-label="接收端眼图"></canvas>
+          </div>
+        </section>
+
+        <div class="metrics" aria-label="链路指标">
+          <div class="metric"><span>比特周期 Tb</span><strong id="metricPeriod">25.0 ps</strong></div>
+          <div class="metric"><span>累计群时延差 Δτ</span><strong id="metricSpread">17.0 ps</strong></div>
+          <div class="metric"><span>输出宽度 / 输入宽度</span><strong id="metricBroadening">2.18×</strong></div>
+          <div class="metric"><span>眼图垂直开口</span><strong id="metricEye" class="moderate">0.42</strong></div>
+        </div>
+
+        <div class="explanation">
+          <div class="equation" aria-label="色散展宽估算公式">
+            Δτ ≈ |D| L Δλ<br>
+            W<sub>out</sub> ≈ √(W<sub>in</sub>² + Δτ²)
+          </div>
+          <p class="interpretation" id="interpretation"></p>
+          <p class="model-note">模型范围：线性色度色散、强度高斯脉冲、能量归一化；忽略光纤损耗、非线性效应、偏振模色散和接收机带宽限制。数值用于课堂趋势演示，不代表特定器件的完整链路预算。</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    "use strict";
+
+    const COLORS = {
+      bg: "#07101b",
+      grid: "#263b4d",
+      text: "#edf4f8",
+      muted: "#9db0bf",
+      cyan: "#32c9e8",
+      amber: "#ffbe3d",
+      green: "#57d29c",
+      coral: "#ff7065",
+      violet: "#b191ff"
+    };
+
+    const defaults = Object.freeze({
+      bitRate: 40,
+      fiberLength: 20,
+      dispersion: 17,
+      spectralWidth: 0.05,
+      dutyCycle: 0.35,
+      threshold: 0.35,
+      pattern: "10110101",
+      showInput: true,
+      showNoise: false
+    });
+
+    const presets = Object.freeze({
+      light: { bitRate: 10, fiberLength: 10, dispersion: 17, spectralWidth: 0.05, dutyCycle: 0.35, threshold: 0.35 },
+      typical: { bitRate: 40, fiberLength: 20, dispersion: 17, spectralWidth: 0.05, dutyCycle: 0.35, threshold: 0.35 },
+      severe: { bitRate: 100, fiberLength: 40, dispersion: 17, spectralWidth: 0.05, dutyCycle: 0.35, threshold: 0.35 }
+    });
+
+    const controls = {
+      bitRate: document.querySelector("#bitRate"),
+      fiberLength: document.querySelector("#fiberLength"),
+      dispersion: document.querySelector("#dispersion"),
+      spectralWidth: document.querySelector("#spectralWidth"),
+      dutyCycle: document.querySelector("#dutyCycle"),
+      threshold: document.querySelector("#threshold"),
+      pattern: document.querySelector("#pattern"),
+      showInput: document.querySelector("#showInput"),
+      showNoise: document.querySelector("#showNoise")
+    };
+
+    const outputs = {
+      bitRate: document.querySelector("#bitRateOut"),
+      fiberLength: document.querySelector("#fiberLengthOut"),
+      dispersion: document.querySelector("#dispersionOut"),
+      spectralWidth: document.querySelector("#spectralWidthOut"),
+      dutyCycle: document.querySelector("#dutyCycleOut"),
+      threshold: document.querySelector("#thresholdOut")
+    };
+
+    const waveCanvas = document.querySelector("#waveCanvas");
+    const eyeCanvas = document.querySelector("#eyeCanvas");
+    const playButton = document.querySelector("#playButton");
+    const resetButton = document.querySelector("#resetButton");
+    const systemFlow = document.querySelector("#systemFlow");
+    let playing = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let scanPhase = 0;
+    let previousTime = performance.now();
+    let currentModel = null;
+
+    function readState() {
+      return {
+        bitRate: Number(controls.bitRate.value),
+        fiberLength: Number(controls.fiberLength.value),
+        dispersion: Number(controls.dispersion.value),
+        spectralWidth: Number(controls.spectralWidth.value),
+        dutyCycle: Number(controls.dutyCycle.value),
+        threshold: Number(controls.threshold.value),
+        pattern: controls.pattern.value,
+        showInput: controls.showInput.checked,
+        showNoise: controls.showNoise.checked
+      };
+    }
+
+    function gaussianPulse(time, center, fwhm, peak = 1) {
+      const normalized = (time - center) / Math.max(fwhm, 1e-9);
+      return peak * Math.exp(-4 * Math.log(2) * normalized * normalized);
+    }
+
+    function deterministicNoise(time, bitPeriod, amplitude) {
+      if (amplitude === 0) return 0;
+      const x = time / bitPeriod;
+      return amplitude * (0.48 * Math.sin(17.3 * x + 0.7) + 0.31 * Math.sin(31.7 * x + 1.9) + 0.21 * Math.sin(53.1 * x));
+    }
+
+    function buildModel(state) {
+      const bits = state.pattern.split("").map(Number);
+      const bitPeriod = 1000 / state.bitRate;
+      const inputWidth = state.dutyCycle * bitPeriod;
+      const delaySpread = Math.abs(state.dispersion) * state.fiberLength * state.spectralWidth;
+      const outputWidth = Math.sqrt(inputWidth * inputWidth + delaySpread * delaySpread);
+      const outputPeak = inputWidth / Math.max(outputWidth, 1e-9);
+      const noiseAmplitude = state.showNoise ? 0.055 : 0;
+
+      const inputAt = (time) => bits.reduce((sum, bit, index) => {
+        return sum + (bit ? gaussianPulse(time, index * bitPeriod, inputWidth) : 0);
+      }, 0);
+
+      const receivedAt = (time) => {
+        const signal = bits.reduce((sum, bit, index) => {
+          return sum + (bit ? gaussianPulse(time, index * bitPeriod, outputWidth, outputPeak) : 0);
+        }, 0);
+        return Math.max(0, signal + deterministicNoise(time, bitPeriod, noiseAmplitude));
+      };
+
+      const samples = bits.map((bit, index) => {
+        const value = receivedAt(index * bitPeriod);
+        return { bit, value, decision: value >= state.threshold ? 1 : 0 };
+      });
+      const errors = samples.filter((sample) => sample.bit !== sample.decision).length;
+      const oneValues = samples.filter((sample) => sample.bit === 1).map((sample) => sample.value);
+      const zeroValues = samples.filter((sample) => sample.bit === 0).map((sample) => sample.value);
+      const oneFloor = oneValues.length ? Math.min(...oneValues) : 0;
+      const zeroCeiling = zeroValues.length ? Math.max(...zeroValues) : 0;
+      const eyeOpening = Math.max(0, Math.min(1, oneFloor - zeroCeiling));
+      const normalizedSpread = delaySpread / bitPeriod;
+      const level = normalizedSpread < 0.3 ? "good" : normalizedSpread < 0.8 ? "moderate" : "severe";
+
+      return {
+        ...state,
+        bits,
+        bitPeriod,
+        inputWidth,
+        delaySpread,
+        outputWidth,
+        outputPeak,
+        inputAt,
+        receivedAt,
+        samples,
+        errors,
+        eyeOpening,
+        normalizedSpread,
+        level
+      };
+    }
+
+    function prepareCanvas(canvas) {
+      const rect = canvas.getBoundingClientRect();
+      const ratio = Math.min(window.devicePixelRatio || 1, 2);
+      const width = Math.max(320, Math.round(rect.width));
+      const height = Math.max(260, Math.round(rect.height));
+      if (canvas.width !== width * ratio || canvas.height !== height * ratio) {
+        canvas.width = width * ratio;
+        canvas.height = height * ratio;
+      }
+      const context = canvas.getContext("2d");
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      context.clearRect(0, 0, width, height);
+      return { context, width, height };
+    }
+
+    function drawAxes(context, plot, yMax, xLabel) {
+      context.strokeStyle = COLORS.grid;
+      context.lineWidth = 1;
+      context.beginPath();
+      context.moveTo(plot.left, plot.top);
+      context.lineTo(plot.left, plot.bottom);
+      context.lineTo(plot.right, plot.bottom);
+      context.stroke();
+
+      context.fillStyle = COLORS.muted;
+      context.font = "12px Arial";
+      context.textAlign = "right";
+      context.fillText(xLabel, plot.right, plot.bottom + 28);
+      context.textAlign = "left";
+      context.fillText("1.0", plot.left - 1, plot.top + (plot.bottom - plot.top) * (1 - 1 / yMax) + 4);
+      context.fillText("I", plot.left - 18, plot.top + 4);
+    }
+
+    function traceCurve(context, points, color, width = 2, alpha = 1, dash = []) {
+      if (!points.length) return;
+      context.save();
+      context.strokeStyle = color;
+      context.globalAlpha = alpha;
+      context.lineWidth = width;
+      context.setLineDash(dash);
+      context.lineJoin = "round";
+      context.lineCap = "round";
+      context.beginPath();
+      context.moveTo(points[0][0], points[0][1]);
+      for (let index = 1; index < points.length; index += 1) context.lineTo(points[index][0], points[index][1]);
+      context.stroke();
+      context.restore();
+    }
+
+    function drawWaveform(model) {
+      const { context, width, height } = prepareCanvas(waveCanvas);
+      const plot = { left: 46, top: 22, right: width - 16, bottom: height - 48 };
+      const yMax = 1.25;
+      drawAxes(context, plot, yMax, "码元位置");
+      const minTime = -0.55 * model.bitPeriod;
+      const maxTime = (model.bits.length - 0.45) * model.bitPeriod;
+      const steps = Math.max(700, Math.round(width * 1.2));
+      const toPoint = (time, value) => [
+        plot.left + (time - minTime) / (maxTime - minTime) * (plot.right - plot.left),
+        plot.bottom - Math.min(yMax, value) / yMax * (plot.bottom - plot.top)
+      ];
+
+      for (let index = 0; index < model.bits.length; index += 1) {
+        const x = toPoint(index * model.bitPeriod, 0)[0];
+        context.strokeStyle = COLORS.grid;
+        context.lineWidth = 1;
+        context.beginPath();
+        context.moveTo(x, plot.top);
+        context.lineTo(x, plot.bottom);
+        context.stroke();
+        context.fillStyle = model.bits[index] ? COLORS.text : COLORS.muted;
+        context.font = "700 12px Arial";
+        context.textAlign = "center";
+        context.fillText(String(model.bits[index]), x, plot.bottom + 25);
+      }
+
+      const inputPoints = [];
+      const receivedPoints = [];
+      for (let index = 0; index <= steps; index += 1) {
+        const time = minTime + index / steps * (maxTime - minTime);
+        inputPoints.push(toPoint(time, model.inputAt(time)));
+        receivedPoints.push(toPoint(time, model.receivedAt(time)));
+      }
+
+      if (model.showInput) traceCurve(context, inputPoints, COLORS.cyan, 1.6, 0.58, [6, 5]);
+
+      context.save();
+      context.fillStyle = "rgb(255 190 61 / 0.11)";
+      context.beginPath();
+      context.moveTo(receivedPoints[0][0], plot.bottom);
+      receivedPoints.forEach((point) => context.lineTo(point[0], point[1]));
+      context.lineTo(receivedPoints.at(-1)[0], plot.bottom);
+      context.closePath();
+      context.fill();
+      context.restore();
+      traceCurve(context, receivedPoints, COLORS.amber, 2.5);
+
+      const thresholdY = toPoint(minTime, model.threshold)[1];
+      traceCurve(context, [[plot.left, thresholdY], [plot.right, thresholdY]], COLORS.coral, 1.2, 0.85, [7, 5]);
+      context.fillStyle = COLORS.coral;
+      context.font = "12px Arial";
+      context.textAlign = "left";
+      context.fillText(`门限 ${model.threshold.toFixed(2)}`, plot.left + 5, thresholdY - 7);
+
+      model.samples.forEach((sample, index) => {
+        const [x, y] = toPoint(index * model.bitPeriod, sample.value);
+        context.fillStyle = sample.bit === sample.decision ? COLORS.green : COLORS.coral;
+        context.beginPath();
+        context.arc(x, y, 4.5, 0, Math.PI * 2);
+        context.fill();
+      });
+
+      const scanX = plot.left + scanPhase * (plot.right - plot.left);
+      traceCurve(context, [[scanX, plot.top], [scanX, plot.bottom]], COLORS.text, 1, 0.36);
+      waveCanvas.setAttribute("aria-label", `接收端波形，累计时延差 ${model.delaySpread.toFixed(1)} 皮秒，${model.errors} 个判决错误`);
+    }
+
+    function lfsrBits(length) {
+      let register = 0x5d;
+      const values = [];
+      for (let index = 0; index < length; index += 1) {
+        values.push(register & 1);
+        const next = ((register >> 6) ^ (register >> 5)) & 1;
+        register = ((register << 1) | next) & 0x7f;
+      }
+      return values;
+    }
+
+    function drawEye(model) {
+      const { context, width, height } = prepareCanvas(eyeCanvas);
+      const plot = { left: 40, top: 22, right: width - 14, bottom: height - 43 };
+      const yMax = 1.25;
+      drawAxes(context, plot, yMax, "相对时间 / Tb");
+      const bits = lfsrBits(127);
+      const samplesPerTrace = Math.max(150, Math.round(width * 0.55));
+      const peak = model.outputPeak;
+      const widthOut = model.outputWidth;
+      const noiseAmplitude = model.showNoise ? 0.035 : 0;
+
+      const receivedLong = (time) => {
+        const centerIndex = Math.round(time / model.bitPeriod);
+        let value = 0;
+        const reach = Math.max(4, Math.ceil(3 * widthOut / model.bitPeriod));
+        for (let offset = -reach; offset <= reach; offset += 1) {
+          const bitIndex = centerIndex + offset;
+          if (bitIndex >= 0 && bitIndex < bits.length && bits[bitIndex]) {
+            value += gaussianPulse(time, bitIndex * model.bitPeriod, widthOut, peak);
+          }
+        }
+        return Math.max(0, value + deterministicNoise(time, model.bitPeriod, noiseAmplitude));
+      };
+
+      for (let trace = 5; trace < 65; trace += 1) {
+        const points = [];
+        for (let sample = 0; sample <= samplesPerTrace; sample += 1) {
+          const relative = -model.bitPeriod + sample / samplesPerTrace * 2 * model.bitPeriod;
+          const value = receivedLong(trace * model.bitPeriod + relative);
+          points.push([
+            plot.left + sample / samplesPerTrace * (plot.right - plot.left),
+            plot.bottom - Math.min(yMax, value) / yMax * (plot.bottom - plot.top)
+          ]);
+        }
+        traceCurve(context, points, model.level === "severe" ? COLORS.coral : COLORS.amber, 1.15, 0.14);
+      }
+
+      const centerX = 0.5 * (plot.left + plot.right);
+      traceCurve(context, [[centerX, plot.top], [centerX, plot.bottom]], COLORS.cyan, 1.2, 0.7, [5, 5]);
+      const thresholdY = plot.bottom - model.threshold / yMax * (plot.bottom - plot.top);
+      traceCurve(context, [[plot.left, thresholdY], [plot.right, thresholdY]], COLORS.coral, 1.2, 0.82, [7, 5]);
+      context.fillStyle = COLORS.muted;
+      context.font = "12px Arial";
+      context.textAlign = "center";
+      context.fillText("最佳采样时刻", centerX, plot.bottom + 27);
+      eyeCanvas.setAttribute("aria-label", `接收眼图，垂直开口 ${model.eyeOpening.toFixed(2)}`);
+    }
+
+    function updateOutputs(model) {
+      outputs.bitRate.value = `${model.bitRate.toFixed(0)} Gb/s`;
+      outputs.fiberLength.value = `${model.fiberLength.toFixed(0)} km`;
+      outputs.dispersion.value = `${model.dispersion.toFixed(1).replace(".0", "")} ps/(nm·km)`;
+      outputs.spectralWidth.value = `${model.spectralWidth.toFixed(2)} nm`;
+      outputs.dutyCycle.value = `${model.dutyCycle.toFixed(2)} Tb`;
+      outputs.threshold.value = model.threshold.toFixed(2);
+
+      document.querySelector("#fiberLengthLabel").textContent = `${model.fiberLength.toFixed(0)} km`;
+      document.querySelector("#fiberDispersionLabel").textContent = `${model.dispersion.toFixed(1).replace(".0", "")} ps/(nm·km)`;
+      document.querySelector("#bitSequenceLabel").textContent = model.bits.join(" ");
+      document.querySelector("#decisionLabel").textContent = model.errors ? `出现 ${model.errors} 个判决错误` : "当前序列判决正确";
+
+      document.querySelector("#metricPeriod").textContent = `${model.bitPeriod.toFixed(1)} ps`;
+      document.querySelector("#metricSpread").textContent = `${model.delaySpread.toFixed(1)} ps`;
+      document.querySelector("#metricBroadening").textContent = `${(model.outputWidth / model.inputWidth).toFixed(2)}×`;
+      const eyeMetric = document.querySelector("#metricEye");
+      eyeMetric.textContent = model.eyeOpening.toFixed(2);
+      eyeMetric.className = model.level;
+
+      const statusText = model.level === "good" ? "轻微码间干扰" : model.level === "moderate" ? "中等码间干扰" : "严重码间干扰";
+      document.querySelector("#statusChip").dataset.level = model.level;
+      document.querySelector("#statusText").textContent = statusText;
+
+      const ratioText = model.normalizedSpread.toFixed(2);
+      document.querySelector("#interpretation").textContent = `当前参数产生约 ${model.delaySpread.toFixed(1)} ps 的累计群时延差，相当于 ${ratioText} 个比特周期。脉冲在光纤内传播时逐步展宽；到达接收端后，相邻码元的尾部进入同一判决窗口，因此 ISI 最终在光电探测与采样判决之间的波形上暴露。${model.errors ? `当前门限下，示例序列出现 ${model.errors} 个判决错误。` : "当前门限下尚未产生判决错误，但眼图开口已反映剩余裕量。"}`;
+
+      const track = document.querySelector("#fiberTrack");
+      track.style.setProperty("--track-distance", `${Math.max(250, track.clientWidth + 30)}px`);
+    }
+
+    function clearPresetSelection() {
+      document.querySelectorAll("[data-preset]").forEach((button) => button.setAttribute("aria-pressed", "false"));
+    }
+
+    function refresh() {
+      currentModel = buildModel(readState());
+      updateOutputs(currentModel);
+      drawWaveform(currentModel);
+      drawEye(currentModel);
+    }
+
+    Object.values(controls).forEach((control) => {
+      control.addEventListener("input", () => {
+        clearPresetSelection();
+        refresh();
+      });
+      control.addEventListener("change", refresh);
+    });
+
+    document.querySelectorAll("[data-preset]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const values = presets[button.dataset.preset];
+        Object.entries(values).forEach(([key, value]) => { controls[key].value = String(value); });
+        clearPresetSelection();
+        button.setAttribute("aria-pressed", "true");
+        refresh();
+      });
+    });
+
+    playButton.addEventListener("click", () => {
+      playing = !playing;
+      systemFlow.classList.toggle("paused", !playing);
+      playButton.textContent = playing ? "Ⅱ" : "▶";
+      playButton.setAttribute("aria-label", playing ? "暂停动画" : "播放动画");
+    });
+
+    resetButton.addEventListener("click", () => {
+      Object.entries(defaults).forEach(([key, value]) => {
+        if (typeof value === "boolean") controls[key].checked = value;
+        else controls[key].value = String(value);
+      });
+      document.querySelectorAll("[data-preset]").forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.preset === "typical"));
+      });
+      refresh();
+    });
+
+    const resizeObserver = new ResizeObserver(refresh);
+    resizeObserver.observe(document.querySelector(".visuals"));
+
+    function animate(time) {
+      const elapsed = Math.min(0.05, (time - previousTime) / 1000);
+      previousTime = time;
+      if (playing && currentModel) {
+        scanPhase = (scanPhase + elapsed / 4.2) % 1;
+        drawWaveform(currentModel);
+      }
+      requestAnimationFrame(animate);
+    }
+
+    window.__isiLab = {
+      buildModel,
+      gaussianPulse,
+      defaults,
+      setPreset(name) {
+        if (!presets[name]) throw new Error(`Unknown preset: ${name}`);
+        Object.entries(presets[name]).forEach(([key, value]) => { controls[key].value = String(value); });
+        refresh();
+        return currentModel;
+      },
+      getModel: () => currentModel
+    };
+
+    refresh();
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>
